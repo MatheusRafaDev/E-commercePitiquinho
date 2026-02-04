@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>Pitiquinho | Meus Cartões</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet"/>
+    <link rel="stylesheet" href="/css/cartoes.css"/>
+    <link rel="stylesheet" href="/css/header.css"/>
+    <style>
+        .form-error { color: #dc3545; margin-top: 0.5rem; font-size: 0.9rem; display: none; }
+    </style>
+</head>
+<body>
+<div th:replace="~{fragments/header :: header}"></div>
+
+<div class="container mt-5 perfil-container">
+
+    <h2 class="mb-4">Meus Cartões</h2>
+
+    <div class="mb-4 text-end">
+        <button class="btn-add-card" onclick="abrirModalNovoCartao()">
+            <i class="fas fa-plus"></i> Adicionar Cartão
+        </button>
+    </div>
+
+
+
+
+    <!-- Modal -->
+    <div class="modal fade" id="modalCartao" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <form th:action="@{/cartoes/adicionar}" th:object="${cartao}" method="post" id="formCartao">
+                    <input type="hidden" th:field="*{id}"/>
+                    <input type="hidden" th:field="*{bandeira}" id="bandeiraField"/>
+
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="modalTitulo">Adicionar Cartão</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+
+                    <div class="modal-body">
+                        <div class="mb-2">
+                            <label class="form-label">Nome do titular</label>
+                            <input type="text" class="form-control" th:field="*{nome}" name="nome" required />
+                        </div>
+
+                        <div class="mb-2">
+                            <label class="form-label">Número do cartão</label>
+                            <div class="input-group">
+                                <input type="text" class="form-control" th:field="*{numero}" name="numero" maxlength="23" placeholder="0000 0000 0000 0000" required />
+                                <span class="input-group-text brand"><i class="fas fa-credit-card"></i></span>
+                            </div>
+                        </div>
+
+                        <div class="row g-2">
+                            <div class="col-6">
+                                <label class="form-label">Validade (MM/AA)</label>
+                                <input type="text" class="form-control" th:field="*{validade}" name="validade" maxlength="5" placeholder="MM/AA" required />
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label">CVV</label>
+                                <input type="password" class="form-control" th:field="*{cvv}" name="cvv" maxlength="3" placeholder="123" required />
+                            </div>
+                        </div>
+
+                        <div class="note-security mt-2">
+                            <i class="fas fa-lock me-1"></i>
+                            Observação: por segurança, **não armazene CVV** no banco. Tokenize com seu gateway ou remova CVV no backend.
+                        </div>
+
+                        <!-- Mensagem de erro -->
+                        <div class="form-error" id="formError"></div>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-success">Salvar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Grid de cartões -->
+    <div class="cards-grid" th:if="${cartoes != null}">
+        <div th:each="c : ${cartoes}">
+            <div th:class="'card-credit ' + (${c.bandeira} == 'VISA' ? 'card-visa' : (${c.bandeira} == 'MASTERCARD' ? 'card-mastercard' : (${c.bandeira} == 'ELO' ? 'card-elo' : 'card-default')) )">
+                <div class="row">
+                    <div class="chip"></div>
+                    <div class="brand">
+                        <i th:if="${c.bandeira == 'VISA'}" class="fab fa-cc-visa"></i>
+                        <i th:if="${c.bandeira == 'MASTERCARD'}" class="fab fa-cc-mastercard"></i>
+                        <i th:if="${c.bandeira == 'ELO'}" class="fas fa-credit-card"></i>
+                        <i th:if="${c.bandeira == null}" class="fas fa-credit-card"></i>
+                    </div>
+                </div>
+
+                <div class="number" th:text="${'**** **** **** ' + ( (c.numero != null && c.numero.length() >= 4) ? #strings.substring(c.numero, c.numero.length()-4) : c.numero ) }">**** **** **** 1234</div>
+
+                <div class="row">
+                    <div>
+                        <div class="name" th:text="${c.nome != null ? c.nome : 'NOME TITULAR'}">NOME TITULAR</div>
+                    </div>
+                    <div>
+                        <div class="expiry" th:text="${c.validade}">MM/AA</div>
+                    </div>
+                </div>
+
+                <div class="cartao-actions mt-2 d-flex gap-2">
+                    <!-- Botão Editar -->
+                    <button type="button"
+                            class="btn btn-sm btn-editar"
+                            th:attr="data-id=${c.id},
+                             data-nome=${c.nome},
+                             data-numero=${c.numero},
+                              data-validade=${c.validade},
+                              data-cvv=${c.cvv},
+                               data-bandeira=${c.bandeira}"
+                            onclick="editarCartao(this);">
+                        Editar
+                    </button>
+
+                    <!-- Botão Excluir -->
+                    <form th:action="@{/cartoes/remover/{id}(id=${c.id})}" method="post" style="display:inline">
+                        <button type="submit" class="btn btn-sm btn-excluir"
+                                onclick="return confirm('Deseja remover este cartão?')">
+                            Excluir
+                        </button>
+                    </form>
+                </div>
+
+
+            </div>
+        </div>
+    </div>
+
+    <div th:if="${cartoes == null or #lists.isEmpty(cartoes)}" class="text-center mt-4">
+        <p class="mb-0">Nenhum cartão cadastrado.</p>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById('formCartao');
+        const numInput = form.elements['numero'];
+        const expiryInput = form.elements['validade'];
+        const cvvInput = form.elements['cvv'];
+        const bandeiraField = document.getElementById('bandeiraField');
+        const errorDiv = document.getElementById('formError');
+        const cardBrandIcon = document.querySelector('#formCartao .brand i');
+
+        function showError(msg) {
+            errorDiv.style.display = 'block';
+            errorDiv.textContent = msg;
+        }
+
+        function clearError() {
+            errorDiv.style.display = 'none';
+            errorDiv.textContent = '';
+        }
+
+        function detectBrand(number) {
+            if(!number) return null;
+            const n = number.replace(/\D/g,'');
+            if(/^4\d{12}(\d{3})?$/.test(n)) return 'VISA';
+            if(/^(5[1-5]\d{14}|2(2[2-9]\d{12}|[3-6]\d{13}|7([01]\d{12}|20\d{12})))$/.test(n)) return 'MASTERCARD';
+            if(/^(4011|4312|4389|4514|4576|5041|506[7-9]|507[0-6]|509|627780|636297|636368|65|650)\d+/.test(n)) return 'ELO';
+            return 'DESCONHECIDO';
+        }
+
+        function formatCardNumber(value) {
+            return value.replace(/\D/g,'').replace(/(.{4})/g,'$1 ').trim();
+        }
+
+        function luhnCheck(num) {
+            const s = num.replace(/\D/g,'');
+            let sum = 0, alt = false;
+            for(let i = s.length - 1; i >= 0; i--) {
+                let n = parseInt(s.charAt(i), 10);
+                if(alt) { n *= 2; if(n > 9) n -= 9; }
+                sum += n;
+                alt = !alt;
+            }
+            return (sum % 10) === 0;
+        }
+
+        function validarValidade(valor) {
+            if (!/^\d{2}\/\d{2}$/.test(valor)) return false;
+            const [mes, ano] = valor.split('/').map(n => parseInt(n, 10));
+            if (mes < 1 || mes > 12) return false;
+            const agora = new Date();
+            const anoAtual = parseInt(String(agora.getFullYear()).slice(2));
+            const mesAtual = agora.getMonth() + 1;
+            if (ano < anoAtual) return false;
+            if (ano === anoAtual && mes < mesAtual) return false;
+            return true;
+        }
+
+        if(numInput) {
+            numInput.addEventListener('input', function() {
+                numInput.value = formatCardNumber(numInput.value);
+                const brand = detectBrand(numInput.value);
+                if(bandeiraField) bandeiraField.value = brand;
+
+                if(cardBrandIcon) {
+                    cardBrandIcon.className = '';
+                    if(brand === 'VISA') cardBrandIcon.className = 'fab fa-cc-visa';
+                    else if(brand === 'MASTERCARD') cardBrandIcon.className = 'fab fa-cc-mastercard';
+                    else if(brand === 'ELO') cardBrandIcon.className = 'fas fa-credit-card';
+                    else cardBrandIcon.className = 'fas fa-credit-card';
+                }
+            });
+        }
+
+        if(expiryInput) {
+            expiryInput.addEventListener('input', function() {
+                const v = expiryInput.value.replace(/\D/g,'').slice(0,4);
+                expiryInput.value = v.length <= 2 ? v : v.slice(0,2) + '/' + v.slice(2);
+            });
+        }
+
+        form.addEventListener('submit', function(e) {
+            clearError();
+
+            const rawNum = numInput.value.replace(/\s/g,'');
+            const brand = detectBrand(rawNum);
+            if(brand === 'DESCONHECIDO') { showError('Bandeira do cartão inválida ou não suportada.'); e.preventDefault(); return; }
+            if(!luhnCheck(rawNum)) { showError('Número do cartão inválido.'); e.preventDefault(); return; }
+            if(!validarValidade(expiryInput.value)) { showError('Data de validade inválida ou cartão vencido.'); e.preventDefault(); return; }
+            const cvv = cvvInput.value.replace(/\D/g,'');
+            if(cvv.length !== 3) { showError('CVV deve ter 3 dígitos.'); e.preventDefault(); return; }
+
+            bandeiraField.value = brand;
+        });
+    });
+
+    function abrirModalNovoCartao() {
+        document.getElementById('modalTitulo').innerText = 'Adicionar Cartão';
+        const form = document.getElementById('formCartao');
+        form.reset();
+        document.getElementById('bandeiraField').value = '';
+        document.getElementById('formError').style.display = 'none';
+        const modal = new bootstrap.Modal(document.getElementById('modalCartao'));
+        modal.show();
+    }
+
+    function editarCartao(button) {
+        document.getElementById('modalTitulo').innerText = 'Editar Cartão';
+        const form = document.getElementById('formCartao');
+        form.elements['id'].value = button.dataset.id || '';
+        form.elements['nome'].value = button.dataset.nome || '';
+        form.elements['numero'].value = button.dataset.numero ? button.dataset.numero.replace(/(.{4})/g,'$1 ').trim() : '';
+        form.elements['validade'].value = button.dataset.validade || '';
+        form.elements['cvv'].value = button.dataset.cvv || '';
+        document.getElementById('bandeiraField').value = button.dataset.bandeira || '';
+        document.getElementById('formError').style.display = 'none';
+        const modal = new bootstrap.Modal(document.getElementById('modalCartao'));
+        modal.show();
+    }
+</script>
+</body>
+</html>

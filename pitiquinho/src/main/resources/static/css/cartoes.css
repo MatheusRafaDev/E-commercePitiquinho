@@ -1,0 +1,162 @@
+/* ===== Base ===== */
+body {
+    background-color: #F9FBFB;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    padding: 0;
+    color: #333;
+}
+
+/* ===== Título ===== */
+h2 {
+    font-size: 1.4rem;
+    color: #000;
+    margin-bottom: 1.2rem;
+}
+
+
+/* ===== Grid de Cartões ===== */
+.cards-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+}
+
+.card-credit {
+    flex: 1 1 calc(25% - 0.6rem);
+    min-width: 180px;
+    background-color: #fff;
+    border-radius: 12px;
+    border: 1px solid #E0E0E0;
+    padding: 1rem;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: transform 0.15s, box-shadow 0.15s;
+}
+
+.card-credit:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+/* ===== Chips e bandeira ===== */
+.card-credit .chip {
+    width: 40px;
+    height: 25px;
+    background-color: #eee;
+    border-radius: 4px;
+    margin-bottom: 1rem;
+}
+
+.card-credit .brand i {
+    font-size: 1.2rem;
+    color: #4FC3C8;
+}
+
+/* ===== Número do cartão ===== */
+.card-credit .number {
+    font-size: 1.1rem;
+    font-weight: 500;
+    letter-spacing: 2px;
+    margin-bottom: 0.5rem;
+    color: #333;
+}
+
+/* ===== Nome e validade ===== */
+.card-credit .name {
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: #555;
+}
+
+.card-credit .expiry {
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: #555;
+    text-align: right;
+}
+
+/* ===== Ações (Editar / Excluir) ===== */
+.cartao-actions {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 0.8rem;
+}
+
+.btn-editar {
+    background-color: #4FC3C8;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 0.35rem 0.9rem;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.btn-editar:hover {
+    background-color: #3BA8AC;
+}
+
+.btn-excluir {
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 0.35rem 0.9rem;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.btn-excluir:hover {
+    background-color: #b02a37;
+}
+
+/* ===== Cartões por bandeira (cores sutis) ===== */
+.card-visa { border-top: 4px solid #1A1F71; }
+.card-mastercard { border-top: 4px solid #FF5F00; }
+.card-elo { border-top: 4px solid #00AEEF; }
+.card-default { border-top: 4px solid #ccc; }
+
+/* ===== Responsivo ===== */
+@media (max-width: 768px) {
+    .card-credit {
+        flex: 1 1 calc(50% - 0.6rem);
+        min-width: 140px;
+    }
+}
+
+.btn-add-card {
+    background-color: #fff; /* fundo branco */
+    color: #4FC3C8; /* cor do texto e ícone do site */
+    border: 1px solid #4FC3C8;
+    border-radius: 8px;
+    padding: 0.45rem 1rem;
+    font-size: 0.9rem;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    transition: 0.2s;
+    cursor: pointer;
+}
+
+.btn-add-card:hover {
+    background-color: #4FC3C8;
+    color: #fff;
+}
+
+.btn-add-card i {
+    color: inherit; /* garante que o ícone herde a cor do botão */
+}
+
+
+@media (max-width: 480px) {
+    .card-credit {
+        flex: 1 1 100%;
+        min-width: 0;
+    }
+}
